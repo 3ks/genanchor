@@ -1,0 +1,16 @@
+# 该文件指定了一些特殊单词的处理方式，这些特殊单词不在 .spelling列表内，且不能通过 lint。
+# 处理格式为映射，等号左侧为不能处理的单词，右侧为映射值，如果为空，则表示删除该单词
+404=four-zero-four
+443=four-four-three
+503=five-zero-three
+IAM=
+IBM=IBM
+SLO=
+GKE=
+nd=
+client-ip-preservation-and-end-to-end-principle
+colocated=
+preservation=
+GCS=
+Determine=
+Prometheus=Prometheus
