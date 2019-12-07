@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 var (
@@ -19,7 +20,8 @@ var (
 
 // load:en+path
 // output:zh+path
-func handle(pathname string) {
+func handle(pathname string,wg *sync.WaitGroup) {
+	defer wg.Done()
 	f, err := os.Open(pathname)
 	if err != nil {
 		panic(err)
@@ -32,12 +34,12 @@ func handle(pathname string) {
 		if strings.HasPrefix(vLine, "##") && !strings.ContainsRune(vLine, '`') {
 			// 去除 # , : + " ? & . /等字符
 			values := strings.FieldsFunc(vLine, func(c rune) bool {
-				return strings.ContainsRune(` #,:+"?&/()`, c)
+				return strings.ContainsRune(`* #,:+"?&/()`, c)
 			})
 
 			anchor := make([]string, len(values))
 			count := 0
-			for k, word := range values {
+			for _, word := range values {
 				v := handleWord(word)
 				if v != "" {
 					anchor[count] = v
@@ -46,8 +48,7 @@ func handle(pathname string) {
 			}
 			vLine = joinLine(vLine, anchor[:count])
 		}
-		//vLine = strings.ReplaceAll(strings.ReplaceAll(vLine, "{{<-", "{{< "), "->}}", " >}}")
-		new.WriteString(vLine)
+		new.WriteString(vLine+"\n")
 
 	}
 
@@ -63,33 +64,53 @@ func handle(pathname string) {
 }
 
 func joinLine(line string, words []string) string {
-	anchor := "{#"
+	line += "{#"
+	isFirst :=true
 	isVar := false
-	for k, v := range words {
+	for _, v := range words {
 		if v == "{{<" {
 			isVar = true
+			line+="-"+v+" "
+			continue
 		}
 		if v == ">}}" {
+			isFirst = false
 			isVar = false
+			line+=" "+v
+			continue
 		}
-
+		if isVar{
+			line+=v
+			continue
+		}
+		v=strings.ReplaceAll(v,"_","")
+		if isFirst{
+			line+=v
+			isFirst=false
+		}else{
+			line+="-"+v
+		}
 	}
+	return line+"}"
 }
 
 func handleWord(word string) string {
 	if spell[word] {
 		// 特有名词，不处理，来源于 Istio
-	} else if special[word] != "" {
-		// 特殊名词，自行维护
-		word = special[word]
-	} else {
-		// 非特有名词、非特俗名词，转小写
-		word = strings.ToLower(word)
+	} else{
+		if _,ok:=special[word] ;ok {
+			// 特殊名词，自行维护
+			word = special[word]
+		} else {
+			// 非特有名词、非特殊名词，转小写
+			word = strings.ToLower(word)
+		}
 	}
+
 
 	// 缩写
 	if special[word] != "" {
-		word = special[word]
+		return special[word]
 	}
 	return word
 }

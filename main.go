@@ -4,9 +4,13 @@
 package main
 
 import (
+	"fmt"
 	"genanchor/anchor"
+	"time"
 )
 
 func main() {
+	t1:=time.Now()
 	anchor.Start("")
+	fmt.Printf("共计耗时：%v ms\n",time.Now().Sub(t1).Milliseconds())
 }

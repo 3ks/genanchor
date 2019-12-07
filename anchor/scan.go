@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 func Start(base string) {
@@ -22,12 +23,15 @@ func Start(base string) {
 		panic(err)
 	}
 	fmt.Println("开始生成锚点……")
+	wg:=&sync.WaitGroup{}
 	for k := range files {
 		if k > count || files[k] == "" {
 			continue
 		}
-		handle(files[k])
+		wg.Add(1)
+		go handle(files[k],wg)
 	}
+	wg.Wait()
 	fmt.Println("任务完成！")
 }
 
