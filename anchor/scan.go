@@ -23,6 +23,7 @@ func Start(base string) {
 		panic(err)
 	}
 	fmt.Println("开始生成锚点……")
+	// 锚点映射：官方风格-自定义风格
 	wg:=&sync.WaitGroup{}
 	for k := range files {
 		if k > count || files[k] == "" {
@@ -32,6 +33,12 @@ func Start(base string) {
 		go handle(files[k],wg)
 	}
 	wg.Wait()
+
+	// 便利前面生成的文件
+	// 遍历带锚点的内链 )[/](#xxx)
+	// 映射
+
+
 	fmt.Println("任务完成！")
 }
 
